@@ -30,7 +30,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         String jwt = null;
         String username = null;
         UserDetails userDetails;
-        UsernamePasswordAuthenticationToken auth = null;
+        UsernamePasswordAuthenticationToken auth;
 
         try {
             String headerAuth = request.getHeader("Authorization");
@@ -46,6 +46,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     userDetails = userDetailsService.loadUserByUsername(username);
                     auth = new UsernamePasswordAuthenticationToken(userDetails, null);
+                    SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             }
         } catch (Exception e) {
