@@ -24,4 +24,11 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     public void addUser(User user) {
         userRepository.save(user);
     }
+
+    @Override
+    public boolean existByUsername(String username) {
+        return userRepository.existsByUsername(username);
+    }
+
+
 }
