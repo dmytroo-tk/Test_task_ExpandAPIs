@@ -1,6 +1,5 @@
 package com.example.test_task_expandapis.token;
 
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,29 +27,21 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         String jwt = null;
-        String username = null;
+        String username;
         UserDetails userDetails;
         UsernamePasswordAuthenticationToken auth;
 
-        try {
-            String headerAuth = request.getHeader("Authorization");
-            if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
-                jwt = headerAuth.substring(7);
+        String headerAuth = request.getHeader("Authorization");
+        if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
+            jwt = headerAuth.substring(7);
+        }
+        if (jwt != null) {
+            username = jwtTokenProvider.getNameFromJwt(jwt);
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                userDetails = userDetailsService.loadUserByUsername(username);
+                auth = new UsernamePasswordAuthenticationToken(userDetails, null);
+                SecurityContextHolder.getContext().setAuthentication(auth);
             }
-            if (jwt != null) {
-                try {
-                    username = jwtTokenProvider.getNameFromJwt(jwt);
-                } catch (ExpiredJwtException e) {
-
-                }
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    userDetails = userDetailsService.loadUserByUsername(username);
-                    auth = new UsernamePasswordAuthenticationToken(userDetails, null);
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                }
-            }
-        } catch (Exception e) {
-
         }
         filterChain.doFilter(request, response);
     }
